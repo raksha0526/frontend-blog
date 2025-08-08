@@ -10,7 +10,8 @@ async function loadBook() {
   }
 
   try {
-    const res = await fetch(`http://localhost:5000/api/posts/${postId}`);
+  const res = await fetch(`https://backend-blog-dnjq.onrender.com/api/posts/${postId}`);
+
     const post = await res.json();
 
     const container = document.getElementById('post-detail');
