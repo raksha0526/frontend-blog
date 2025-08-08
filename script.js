@@ -109,3 +109,34 @@ window.onload = () => {
   loadPosts();
   loadComments();
 };
+window.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('token');
+  const loginBtn = document.getElementById('login-btn');
+  const logoutBtn = document.getElementById('logout-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const userInfo = document.getElementById('user-info');
+
+  if (token) {
+    // Decode token to get username
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      userInfo.textContent = `Welcome, ${payload.username || 'User'}`;
+    } catch {
+      userInfo.textContent = 'Welcome!';
+    }
+
+    loginBtn.style.display = 'none';
+    registerBtn.style.display = 'none';
+    logoutBtn.style.display = 'inline';
+  } else {
+    loginBtn.style.display = 'inline';
+    registerBtn.style.display = 'inline';
+    logoutBtn.style.display = 'none';
+    userInfo.textContent = '';
+  }
+
+  logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem('token');
+    location.reload();
+  });
+});

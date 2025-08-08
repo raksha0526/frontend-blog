@@ -1,0 +1,40 @@
+<!-- /frontend/admin/admin.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="sidebar">
+      <h2>Admin Panel</h2>
+      <ul>
+        <li><a href="#" id="view-posts-tab">View All Posts</a></li>
+        <li><a href="#" id="create-post-tab">Create New Post</a></li>
+        <li><a href="#" id="logout-btn">Logout</a></li>
+      </ul>
+    </aside>
+
+    <main class="content">
+      <section id="posts-section" class="active">
+        <h3>All Blog Posts</h3>
+        <div id="post-list"></div>
+      </section>
+
+      <section id="create-post-section">
+        <h3>Create a New Post</h3>
+        <form id="post-form">
+          <input type="text" id="title" placeholder="Title" required />
+          <input type="text" id="image" placeholder="Image URL" />
+          <textarea id="content" placeholder="Post Content" required></textarea>
+          <button type="submit">Publish</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
