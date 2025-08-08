@@ -189,3 +189,37 @@ header.main-header {
   transform: translateY(-4px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.1);
 }
+#comment-form-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-top: 1px solid #ccc;
+}
+
+#comments-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+#comments-list li {
+  background: #f9f9f9;
+  margin: 0.5rem 0;
+  padding: 0.8rem;
+  border-radius: 8px;
+}
+
+textarea {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button#submit-comment {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}

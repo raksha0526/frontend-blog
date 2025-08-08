@@ -6,6 +6,7 @@ async function loadPosts() {
     const container = document.getElementById('blog-list');
     const message = document.getElementById('message');
     container.innerHTML = '';
+
     if (posts.length === 0) {
       if (message) message.textContent = 'No posts yet!';
       return;
@@ -24,6 +25,7 @@ async function loadPosts() {
 
       container.appendChild(card);
     });
+
   } catch (err) {
     console.error('Error loading posts:', err);
     const message = document.getElementById('message');
@@ -31,4 +33,79 @@ async function loadPosts() {
   }
 }
 
-window.onload = loadPosts;
+// Comment Section Logic
+const token = localStorage.getItem('token');
+const postId = new URLSearchParams(window.location.search).get('id');
+
+// Show comment form only if user is logged in
+if (token) {
+  const form = document.getElementById('comment-form-container');
+  if (form) form.style.display = 'block';
+}
+
+// Submit comment
+const submitBtn = document.getElementById('submit-comment');
+if (submitBtn) {
+  submitBtn.addEventListener('click', async () => {
+    const text = document.getElementById('comment-text').value.trim();
+    if (!text) {
+      alert("Comment can't be empty");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/comment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.errors?.[0]?.msg || data.error || "Failed to post comment");
+        return;
+      }
+
+      document.getElementById('comment-text').value = '';
+      renderComments(data); // this should be `loadComments()` ideally
+
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  });
+}
+
+// Load comments
+async function loadComments() {
+  try {
+    const res = await fetch(`/api/posts/${postId}`);
+    const post = await res.json();
+    renderComments(post.comments);
+  } catch (err) {
+    console.error("Error loading comments:", err);
+  }
+}
+
+// Render comment list
+function renderComments(comments = []) {
+  const list = document.getElementById('comments-list');
+  if (!list) return;
+
+  list.innerHTML = '';
+  comments.forEach(c => {
+    const li = document.createElement('li');
+    li.textContent = `${c.username || 'Anonymous'}: ${c.text}`;
+    list.appendChild(li);
+  });
+}
+
+// Run
+window.onload = () => {
+  loadPosts();
+  loadComments();
+};
