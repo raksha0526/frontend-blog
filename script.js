@@ -1,6 +1,7 @@
 async function loadPosts() {
   try {
-    const res = await fetch('http://localhost:5000/api/posts');
+const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts');
+
     const posts = await res.json();
 
     const container = document.getElementById('blog-list');

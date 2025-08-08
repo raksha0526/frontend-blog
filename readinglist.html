@@ -47,7 +47,7 @@
   <script>
     async function loadReadingList() {
       try {
-        const res = await fetch('http://localhost:5000/api/readinglist');
+        const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts');
         const books = await res.json();
         const container = document.getElementById('reading-list');
         container.innerHTML = '';
@@ -78,7 +78,7 @@
       const completed = document.getElementById('completed').checked;
 
       try {
-        const res = await fetch('http://localhost:5000/api/readinglist', {
+        const res = await fetch('https://backend-blog-dnjq.onrender.com/api/readinglist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, author, cover, completed }),
