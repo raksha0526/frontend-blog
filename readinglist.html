@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Reading List</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="main-header">
+    <div class="container">
+      <h1>Sugar & Storytime</h1>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="readinglist.html">Reading List</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container">
+      <h2>📚 My Personal Reading List</h2>
+      <p>Books I'm currently reading or can't wait to dive into!</p>
+    </div>
+  </section>
+
+  <main class="container">
+    <form id="reading-form" style="margin-bottom: 2rem;">
+      <input type="text" id="title" placeholder="Book Title" required>
+      <input type="text" id="author" placeholder="Author" required>
+      <input type="url" id="cover" placeholder="Cover Image URL">
+      <label>
+        <input type="checkbox" id="completed"> Completed
+      </label>
+      <button type="submit">➕ Add Book</button>
+    </form>
+
+    <div id="reading-list" class="blog-grid"></div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© 2025 Raksha’s Book Blog</p>
+    </div>
+  </footer>
+
+  <script>
+    async function loadReadingList() {
+      try {
+        const res = await fetch('http://localhost:5000/api/readinglist');
+        const books = await res.json();
+        const container = document.getElementById('reading-list');
+        container.innerHTML = '';
+
+        books.forEach(book => {
+          const card = document.createElement('div');
+          card.className = 'post-card';
+          card.innerHTML = `
+            <img src="${book.cover}" alt="${book.title}">
+            <h3>${book.title}</h3>
+            <p><strong>Author:</strong> ${book.author}</p>
+            <p>${book.completed ? "✅ Finished" : "📖 In Progress"}</p>
+          `;
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Failed to load books', err);
+      }
+    }
+
+    const form = document.getElementById('reading-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById('title').value;
+      const author = document.getElementById('author').value;
+      const cover = document.getElementById('cover').value || 'default.jpg';
+      const completed = document.getElementById('completed').checked;
+
+      try {
+        const res = await fetch('http://localhost:5000/api/readinglist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, author, cover, completed }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          alert('Error: ' + errData.error);
+          return;
+        }
+
+        form.reset();
+        loadReadingList();
+      } catch (err) {
+        alert('Failed to add book');
+        console.error(err);
+      }
+    });
+
+    window.onload = loadReadingList;
+  </script>
+</body>
+</html>
