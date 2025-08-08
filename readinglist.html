@@ -47,7 +47,7 @@
   <script>
     async function loadReadingList() {
       try {
-        const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts');
+        const res = await fetch('https://backend-blog-dnjq.onrender.com/api/readinglist');
         const books = await res.json();
         const container = document.getElementById('reading-list');
         container.innerHTML = '';
