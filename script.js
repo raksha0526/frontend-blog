@@ -1,6 +1,14 @@
+const BACKEND_URL =
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : 'https://blogsiter.onrender.com';
+
+const token = localStorage.getItem('token');
+
+// Load all posts for homepage or blog list
 async function loadPosts() {
   try {
-    const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts');
+    const res = await fetch(`${BACKEND_URL}/api/posts`);
     const posts = await res.json();
 
     const container = document.getElementById('blog-list');
@@ -19,6 +27,7 @@ async function loadPosts() {
       card.innerHTML = `
         <img src="${post.image}" alt="${post.title}" onerror="this.style.display='none'">
         <h3><a href="bookname.html?id=${post._id}">${post.title}</a></h3>
+        <p><strong>Author:</strong> ${post.bookAuthor || 'Unknown'}</p>
         <p class="date">${new Date(post.date).toDateString()}</p>
         <p>${post.content.substring(0, 100)}...</p>
       `;
@@ -33,19 +42,47 @@ async function loadPosts() {
   }
 }
 
-// Comment Section Logic
-const token = localStorage.getItem('token');
-const postId = new URLSearchParams(window.location.search).get('id');
+// Load a single post (for post detail page)
+async function loadSinglePost() {
+  const postId = new URLSearchParams(window.location.search).get('id');
+  if (!postId) return;
 
-// Show comment form only if user is logged in
-if (token) {
-  const form = document.getElementById('comment-form-container');
-  if (form) form.style.display = 'block';
+  try {
+    const headers = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}`, { headers });
+
+    if (!res.ok) throw new Error('Failed to load post');
+
+    const post = await res.json();
+
+    const container = document.getElementById('post-detail');
+    if (container) {
+      container.innerHTML = `
+        <h2>${post.title}</h2>
+        <p><strong>Author:</strong> ${post.bookAuthor || 'Unknown'}</p>
+        <img src="${post.image}" alt="${post.title}" onerror="this.style.display='none'"/>
+        <p>${post.content.replace(/\n/g, '<br>')}</p>
+      `;
+    }
+  } catch (err) {
+    console.error(err);
+    const container = document.getElementById('post-detail');
+    if (container) container.innerHTML = '<p>Error loading post.</p>';
+  }
 }
 
-// Submit comment
-const submitBtn = document.getElementById('submit-comment');
-if (submitBtn) {
+// Show comment form only if user is logged in
+function setupCommentForm() {
+  if (!token) return;
+
+  const form = document.getElementById('comment-form-container');
+  if (form) form.style.display = 'block';
+
+  const submitBtn = document.getElementById('submit-comment');
+  if (!submitBtn) return;
+
   submitBtn.addEventListener('click', async () => {
     const text = document.getElementById('comment-text').value.trim();
     if (!text) {
@@ -53,8 +90,11 @@ if (submitBtn) {
       return;
     }
 
+    const postId = new URLSearchParams(window.location.search).get('id');
+    if (!postId) return;
+
     try {
-      const res = await fetch(`/api/posts/${postId}/comment`, {
+      const res = await fetch(`${BACKEND_URL}/api/posts/${postId}/comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +111,8 @@ if (submitBtn) {
       }
 
       document.getElementById('comment-text').value = '';
-      renderComments(data); // this should be `loadComments()` ideally
+      // Reload comments fresh after posting
+      await loadComments();
 
     } catch (err) {
       console.error(err);
@@ -80,10 +121,13 @@ if (submitBtn) {
   });
 }
 
-// Load comments
+// Load comments for a single post
 async function loadComments() {
+  const postId = new URLSearchParams(window.location.search).get('id');
+  if (!postId) return;
+
   try {
-    const res = await fetch(`/api/posts/${postId}`);
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}`);
     const post = await res.json();
     renderComments(post.comments);
   } catch (err) {
@@ -104,39 +148,47 @@ function renderComments(comments = []) {
   });
 }
 
-// Run
-window.onload = () => {
-  loadPosts();
-  loadComments();
-};
-window.addEventListener('DOMContentLoaded', () => {
-  const token = localStorage.getItem('token');
+// Setup login/logout/register buttons and greeting
+function setupUserUI() {
   const loginBtn = document.getElementById('login-btn');
   const logoutBtn = document.getElementById('logout-btn');
   const registerBtn = document.getElementById('register-btn');
   const userInfo = document.getElementById('user-info');
 
   if (token) {
-    // Decode token to get username
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      userInfo.textContent = `Welcome, ${payload.username || 'User'}`;
+      userInfo.textContent = `Welcome, ${payload.username || payload.email || 'User'}`;
     } catch {
       userInfo.textContent = 'Welcome!';
     }
-
-    loginBtn.style.display = 'none';
-    registerBtn.style.display = 'none';
-    logoutBtn.style.display = 'inline';
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (registerBtn) registerBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'inline';
   } else {
-    loginBtn.style.display = 'inline';
-    registerBtn.style.display = 'inline';
-    logoutBtn.style.display = 'none';
-    userInfo.textContent = '';
+    if (loginBtn) loginBtn.style.display = 'inline';
+    if (registerBtn) registerBtn.style.display = 'inline';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (userInfo) userInfo.textContent = '';
   }
 
-  logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('token');
-    location.reload();
-  });
-});
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      location.reload();
+    });
+  }
+}
+
+// On window load, run relevant functions based on page
+window.onload = () => {
+  if (document.getElementById('blog-list')) loadPosts();
+
+  if (document.getElementById('post-detail')) {
+    loadSinglePost();
+    loadComments();
+    setupCommentForm();
+  }
+
+  setupUserUI();
+};

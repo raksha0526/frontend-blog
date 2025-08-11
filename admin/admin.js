@@ -1,4 +1,8 @@
 // /frontend/admin/admin.js
+const BACKEND_URL =
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : 'https://blogsiter.onrender.com';
 
 // TAB SWITCHING
 document.getElementById('view-posts-tab').addEventListener('click', () => {
@@ -17,20 +21,21 @@ document.getElementById('post-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const title = document.getElementById('title').value.trim();
+  const bookAuthor = document.getElementById('bookAuthor').value.trim();  // Get value
   const image = document.getElementById('image').value.trim();
   const content = document.getElementById('content').value.trim();
   const token = localStorage.getItem('token');
 
-  if (!title || !content) return alert("Title and content are required!");
+  if (!title || !content || !bookAuthor) return alert("Title, Book Author, and content are required!");
 
   try {
-    const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts', {
+    const res = await fetch(`${BACKEND_URL}/api/posts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ title, image, content })
+      body: JSON.stringify({ title, bookAuthor, image, content })  // Send bookAuthor here
     });
 
     const data = await res.json();
@@ -49,13 +54,14 @@ document.getElementById('post-form').addEventListener('submit', async (e) => {
   }
 });
 
+
 // LOAD POSTS
 async function loadPosts() {
   const container = document.getElementById('post-list');
   container.innerHTML = '';
 
   try {
-    const res = await fetch('https://backend-blog-dnjq.onrender.com/api/posts');
+    const res = await fetch(`${BACKEND_URL}/api/posts`);
     const posts = await res.json();
 
     posts.forEach(post => {
@@ -73,13 +79,17 @@ async function loadPosts() {
   }
 }
 
-// DELETE POST
 async function deletePost(postId) {
   const token = localStorage.getItem('token');
+  if (!token) {
+    alert('You must be logged in to delete posts.');
+    return;
+  }
+
   if (!confirm('Are you sure you want to delete this post?')) return;
 
   try {
-    const res = await fetch(`https://backend-blog-dnjq.onrender.com/api/posts/${postId}`, {
+    const res = await fetch(`${BACKEND_URL}/api/posts/${postId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`
@@ -87,7 +97,8 @@ async function deletePost(postId) {
     });
 
     if (!res.ok) {
-      alert('Failed to delete post');
+      const data = await res.json();
+      alert(data.message || 'Failed to delete post');
       return;
     }
 
@@ -95,6 +106,7 @@ async function deletePost(postId) {
     loadPosts();
   } catch (err) {
     console.error('Error deleting post:', err);
+    alert('Error deleting post');
   }
 }
 
