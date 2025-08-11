@@ -1,8 +1,6 @@
 // ✅ Put this at the very top of your JS file
-const BACKEND_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000'
-    : 'https://blogsiter.onrender.com';
+const BACKEND_URL = 'https://blogsiter.onrender.com';
+
 
 // Your existing function
 async function loadBook() {
