@@ -45,6 +45,8 @@
   </footer>
 
   <script>
+    const BACKEND_URL = 'https://blogsiter.onrender.com';
+
     async function loadReadingList() {
       try {
         const res = await fetch(`${BACKEND_URL}/api/readinglist`);
