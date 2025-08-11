@@ -5,7 +5,7 @@ const BACKEND_URL =
 
 const token = localStorage.getItem('token');
 
-// Load all posts for homepage or blog list
+// Load all posts for homepage or blog lists
 async function loadPosts() {
   try {
     const res = await fetch(`${BACKEND_URL}/api/posts`);
