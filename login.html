@@ -31,10 +31,8 @@
 
       const email = form.email.value.trim();
       const password = form.password.value.trim();
-     const BACKEND_URL =
-  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000'
-    : 'https://blogsiter.onrender.com';
+    const BACKEND_URL = 'https://blogsiter.onrender.com';
+
 
       try {
         const res = await fetch(`${BACKEND_URL}/api/auth/login`, {
